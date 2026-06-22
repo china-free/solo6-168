@@ -32,6 +32,16 @@ setup(
             "time-travel=time_travel.cli:main",
         ],
     },
+    package_data={
+        "time_travel.data": [
+            "time_shim.so",
+            "time_shim.dylib",
+            "*.so",
+            "*.dylib",
+        ],
+    },
+    include_package_data=True,
+    zip_safe=False,
     classifiers=[
         "Development Status :: 4 - Beta",
         "Environment :: Console",

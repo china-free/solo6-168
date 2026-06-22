@@ -18,6 +18,7 @@ from .exceptions import (
     UnsupportedPlatformError,
     CommandExecutionError,
 )
+from .library_locator import LibraryLocator
 from .time_simulator import TimeOffset
 
 
@@ -272,33 +273,13 @@ class ProcessLauncher:
         """
         解析并验证共享库路径
 
-        查找顺序:
-        1. 用户指定的路径
-        2. 当前目录下的 lib/time_shim.so
-        3. 项目根目录下的 lib/time_shim.so
-        4. 与本模块同目录下的 lib/time_shim.so
+        使用 LibraryLocator 支持多种部署场景：
+        - 用户显式指定路径
+        - 环境变量 TIME_TRAVEL_LIBRARY_PATH
+        - 包内资源 (importlib.resources)
+        - 项目根目录 lib/ (开发模式)
+        - 系统标准路径 (/usr/local/lib 等)
+        - 动态链接器路径
         """
-        if library_path is not None:
-            path = Path(library_path).expanduser().resolve()
-            if not path.exists():
-                raise LibraryNotFoundError(str(path))
-            return path
-
-        search_paths = [
-            Path.cwd() / "lib" / f"time_shim{self.strategy.get_library_extension()}",
-            Path(__file__).parent.parent.parent.parent
-            / "lib"
-            / f"time_shim{self.strategy.get_library_extension()}",
-            Path(__file__).parent.parent / "lib" / f"time_shim{self.strategy.get_library_extension()}",
-            Path("/usr/local/lib") / f"time_shim{self.strategy.get_library_extension()}",
-        ]
-
-        for path in search_paths:
-            if path.exists():
-                return path.resolve()
-
-        raise LibraryNotFoundError(
-            "lib/time_shim" + self.strategy.get_library_extension(),
-            "找不到时间劫持共享库\n"
-            "请在项目根目录执行 'make' 命令编译，或使用 --library 参数指定路径",
-        )
+        locator = LibraryLocator(self.strategy.get_library_extension())
+        return locator.locate(library_path)

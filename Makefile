@@ -19,10 +19,12 @@ PYTHON_DIR = $(SRC_DIR)/python
 LIB_DIR = lib
 BIN_DIR = bin
 TEST_DIR = tests
+DATA_DIR = $(PYTHON_DIR)/time_travel/data
 
 # 源文件和目标文件
 C_SRC = $(C_DIR)/time_shim.c
 SHARED_LIB = $(LIB_DIR)/time_shim.so
+PKG_LIB = $(DATA_DIR)/time_shim.so
 
 # Python 可执行脚本
 CLI_SCRIPT = $(BIN_DIR)/time-travel
@@ -34,7 +36,7 @@ all: build
 
 # 构建共享库
 .PHONY: build
-build: $(SHARED_LIB) $(CLI_SCRIPT)
+build: $(SHARED_LIB) $(PKG_LIB) $(CLI_SCRIPT)
 
 # 编译 C 共享库
 $(SHARED_LIB): $(C_SRC) | $(LIB_DIR)
@@ -42,9 +44,19 @@ $(SHARED_LIB): $(C_SRC) | $(LIB_DIR)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $<
 	@echo "完成: $@"
 
+# 将共享库复制到 Python 包内 data 目录（打包 wheel 时会包含）
+$(PKG_LIB): $(SHARED_LIB) | $(DATA_DIR)
+	@echo "复制共享库到 Python 包资源目录..."
+	@cp $(SHARED_LIB) $(PKG_LIB)
+	@echo "完成: $@"
+
 # 创建 lib 目录
 $(LIB_DIR):
 	@mkdir -p $(LIB_DIR)
+
+# 创建 data 目录
+$(DATA_DIR):
+	@mkdir -p $(DATA_DIR)
 
 # 创建 bin 目录
 $(BIN_DIR):
@@ -95,6 +107,8 @@ clean:
 	@echo "清理编译产物..."
 	@rm -rf $(LIB_DIR)
 	@rm -rf $(BIN_DIR)
+	@rm -f $(PKG_LIB)
+	@find . -type f -name "*.so" -o -name "*.dylib" -path "*/time_travel/data/*" -delete
 	@find . -type f -name "*.pyc" -delete
 	@find . -type d -name "__pycache__" -delete
 	@find . -type d -name ".pytest_cache" -delete
