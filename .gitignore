@@ -1,0 +1,37 @@
+# 编译产物
+lib/
+bin/
+
+# Python 缓存
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# 虚拟环境
+venv/
+env/
+.venv/
+.env/
+
+# 测试和覆盖率
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 构建产物
+build/
+dist/
+*.egg-info/
+
+# 临时文件
+*.log
+*.tmp
+*.temp
