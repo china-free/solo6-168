@@ -5,6 +5,7 @@
 并提供可扩展的时间计算接口。
 """
 
+import math
 import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
@@ -165,7 +166,7 @@ class TimeSimulator:
         delta = self.target_time - real_time
         total_seconds = delta.total_seconds()
 
-        seconds = int(total_seconds)
+        seconds = math.floor(total_seconds)
         nanoseconds = int((total_seconds - seconds) * 1e9)
 
         return TimeOffset(seconds=seconds, nanoseconds=nanoseconds)
